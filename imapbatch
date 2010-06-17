@@ -31,9 +31,9 @@
 
 
 # Change this to the server you are migrating from
-SERVER1="squid14.laughingsquid.net"
+SERVER1=""
 # Change this to the server you are migrating to
-SERVER2="secure.emailsrvr.com"
+SERVER2=""
 # Not used yet
 SSL1=""
 SSL2=""
