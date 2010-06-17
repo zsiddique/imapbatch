@@ -1,0 +1,29 @@
+ Shell script wrapper that is design to migrate
+ multiple IMAP accounts from one IMAP server to another
+ using the imapsync tool <http://freshmeat.net/projects/imapsync/>
+-------------------------------------------------------------------
+ HOW TO USE
+ ./imapbatch server1.txt server2.txt
+
+ server1.txt must have the login and passwords for the server we are
+ moving users from.  Format must be "user[@domain.com] password"
+
+ server2.txt must be like server1.txt but for the IMAP server receiving 
+ the E-Mail
+
+ You must edit in this file SERVER1 and SERVER2 variables to the servers
+ you are using.
+ 
+ Check function imapcall and make sure settings you need for imapsync
+ are correct and needed for your servers
+--------------------------------------------------------------------
+ TODO
+ 1. Setup config file to be read/find better way to get settings
+ 2. Make switch/if statements for different type of server setups
+ 3. Debate if Server names should be passed in at command line or called out in file
+ 4. Comment everything
+ 5. Become a better BASH coder
+--------------------------------------------------------------------
+ Copyright (c) 2010 Zuhaib <http://www.zuhaiblog.com/>
+ This script is licensed under GNU GPL version 2.0 or above
+---------------------------------------------------------------
