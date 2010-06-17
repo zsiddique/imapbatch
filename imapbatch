@@ -1,0 +1,106 @@
+#!/bin/bash
+# Shell script wrapper that is design to migrate
+# multiple IMAP accounts from one IMAP server to another
+# using the imapsync tool <http://freshmeat.net/projects/imapsync/>
+#-------------------------------------------------------------------
+# HOW TO USE
+# ./imapbatch server1.txt server2.txt
+#
+# server1.txt must have the login and passwords for the server we are
+# moving users from.  Format must be "user[@domain.com] password"
+#
+# server2.txt must be like server1.txt but for the IMAP server receiving 
+# the E-Mail
+#
+# You must edit in this file SERVER1 and SERVER2 variables to the servers
+# you are using.
+# 
+# Check function imapcall and make sure settings you need for imapsync
+# are correct and needed for your servers
+#--------------------------------------------------------------------
+# TODO
+# 1. Setup config file to be read/find better way to get settings
+# 2. Make switch/if statements for different type of server setups
+# 3. Debate if Server names should be passed in at command line or called out in file
+# 4. Comment everything
+# 5. Become a better BASH coder
+#--------------------------------------------------------------------
+# Copyright (c) 2010 Zuhaib <http://www.zuhaiblog.com/>
+# This script is licensed under GNU GPL version 2.0 or above
+#--------------------------------------------------------------------
+
+
+# Change this to the server you are migrating from
+SERVER1="squid14.laughingsquid.net"
+# Change this to the server you are migrating to
+SERVER2="secure.emailsrvr.com"
+# Not used yet
+SSL1=""
+SSL2=""
+
+# Function imapread takes two variable, file1 and file2 and reads
+# them each and tokenizes them as User name and password for server1
+# and server2.  Passes this information to imapcall  
+function imapread()
+{
+	local FD1=7
+	local FD2=8
+	local file1=$1
+	local file2=$2
+	local data1
+	local data2
+
+	BAKIFS=$IFS
+	IFS=$(echo -en "\n\b")
+	eval exec "$FD1<$file1"
+	eval exec "$FD2<$file2"
+
+	while  read data1 <&$FD1 && read data2 <&$FD2 
+	do
+		        U1=$(echo $data1 | awk '{ print $1 }')
+                P1=$(echo $data1 | awk '{ print $2 }')
+                U2=$(echo $data2 | awk '{ print $1 }')
+				P2=$(echo $data2 | awk '{ print $2 }')
+
+				imapcall $U1 $P1 $U2 $P2
+
+	done
+	exec 0<&7
+	exec 0<&8
+	IFS=$BAKIFS
+}
+
+# Takes information passed from imapread, requires four variables be passed.
+# Runs imapsync, must be edited to work correctly with different server types
+function imapcall()
+{
+	U1="$1"
+	P1="$2"
+	U2="$3"
+	P2="$4"
+	
+	
+	imapsync --host1 $SERVER1 --port1 143 --user1 $U1 --password1 $P1 \
+		--host2 $SERVER2 --port2 993 --ssl2 --user2 $U2 --password2 $P2 \
+		--noauthmd5 --allowsizemismatch	
+	
+}
+
+
+
+if [ "$1" == "" -o "$2" == "" ]; then
+	echo "Must have files for both old and new IMAP servers"
+	exit 1
+else
+	FILE1="$1"
+	FILE2="$2"
+	if [ ! -f $FILE1 -o ! -f $FILE2 ]; then
+		echo "One of the files does not exists"
+		exit 2
+	elif [ ! -r $FILE1 -o ! -r $FILE2 ]; then
+		echo "One of the files can not be read"
+		exit 3
+	fi
+fi
+
+imapread $FILE1 $FILE2
